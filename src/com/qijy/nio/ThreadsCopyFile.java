@@ -42,7 +42,7 @@ public class ThreadsCopyFile implements Runnable {
                 readFile = new RandomAccessFile(srcFile,"r");
                 writeFile = new RandomAccessFile(desFile,"rw");
                 byte [] bytes = new byte[1024*8];
-
+                // 将文件读取游标设置到start位置
                 readFile.seek(start);
                 writeFile.seek(start);
                 while ((len=readFile.read(bytes))!=-1){
@@ -107,18 +107,25 @@ public class ThreadsCopyFile implements Runnable {
 
         Thread [] threads = new Thread[threadcount];
         long length = srcFile.length();
+        // 计算每个线程处理多少k
         long avg = length/threadcount/(1024*8)*1024*8;
         for (int i=0;i<threadcount;i++){
+            // 文件读取位置
             long start = i*avg;
+            // 文件读取结束位置
             long end = (i+1)*avg;
+            // 当到达最后一个线程的时候,给结束位置设置为文件长度
             if(i == threadcount -1){
                 end = length;
             }
+            // 创建任务
             threadsCopyFiles[i] = new ThreadsCopyFile(srcFile,desFile,start,end);
+            // 给线程数组复制
             threads [i] = new Thread(threadsCopyFiles[i],"文件复制线程:"+i);
         }
         for (Thread thread : threads) {
-                thread.start();
+            // 启动线程
+            thread.start();
         }
         long e = System.currentTimeMillis();
         System.out.println("耗时:"+(e-s));
