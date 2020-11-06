@@ -34,6 +34,7 @@ public class MapperByteBufferTest {
             for (int i=0;i<(int) length;i++){
                 buf[i] = map.get(i);
             }
+            // 将mappedbytebuffer转成字符串
             String s = new String(buf,"utf-8");
             System.out.println(s);
         } catch (IOException e) {
