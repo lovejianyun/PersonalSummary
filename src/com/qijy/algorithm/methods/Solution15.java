@@ -19,11 +19,11 @@ public class Solution15 {
     private static List<Object> getArrayY(){
         List<Object> list = new ArrayList<>();
         list.add(1);
-        list.add(null);
-        list.add(null);
+        list.add(1);
+        list.add(1);
         list.add(5);
-        list.add(null);
-        list.add(null);
+        list.add(5);
+        list.add(5);
         list.add(6);
         list.add(7);
         list.add(null);
