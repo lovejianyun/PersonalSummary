@@ -14,7 +14,7 @@ public class SumSpeedTest {
             while (true){
                 try {
                     SpeedCache.INSTANCE.increament("qijy");
-                    TimeUnit.MILLISECONDS.sleep(100);
+                    TimeUnit.MILLISECONDS.sleep(new Random().nextInt(10));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -25,7 +25,7 @@ public class SumSpeedTest {
             while (true){
                 try {
                     SpeedCache.INSTANCE.increament("songli");
-                    TimeUnit.MILLISECONDS.sleep(10);
+                    TimeUnit.MILLISECONDS.sleep(new Random().nextInt(20));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
