@@ -69,5 +69,8 @@ public class BitSetUtil {
 		long xx = 65535;
 		long l = setBit(xx, 0, 0);
 		System.out.println(l);
+
+		int forBitIndex = getForBitIndex(xx, 15);
+		System.out.println(forBitIndex);
 	}
 }
