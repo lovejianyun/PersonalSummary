@@ -1,7 +1,5 @@
 package com.qijy.threads.threadsafe;
 
-import java.util.Random;
-
 public class SafeThread implements Runnable {
     private String content;
 

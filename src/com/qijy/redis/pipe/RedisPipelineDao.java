@@ -1,13 +1,14 @@
 package com.qijy.redis.pipe;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
+
+import com.qijy.redis.CommonCacheDao;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -18,20 +19,8 @@ import redis.clients.util.JedisClusterCRC16;
 
 public class RedisPipelineDao {
 
-	private RedisClusterWithPipeline redisCluster = RedisClusterWithPipeline.Cluster;
-	private JedisWithSlotCache jedisWithSlotCache = redisCluster.newJedisWithSlotCache();
 	
-	
-	
-//	public void muiltSet(Map<String, String> dataMap) throws Exception{
-//		RedisSetPipeline<String> redisPipe = new RedisSetPipeline<String>(){
-//			@Override
-//			public void execute(Pipeline pipe, String key, String value) {
-//				pipe.set(key, value);
-//			}
-//		};
-//		redisPipe.muiltRun(dataMap);
-//	}
+	//private static final Logger LOG = Logger.getLogger(RedisPipelineDao.class);
 	
 	/**
 	 * string类型写redis管道实现
@@ -74,24 +63,34 @@ public class RedisPipelineDao {
 	
 	
 	
+	
+	
 	public Map<String, Map<String, String>>  muiltHgetall(Collection<String> keys) throws Exception{
-		RedisGetPipeline<Map<String,String>> redisPipe = new RedisGetPipeline<Map<String,String>>(){
-			@Override
-			public Response<Map<String, String>> execute(Pipeline pipe, String key) {
-				return pipe.hgetAll(key);
-			}
-		};
-		return redisPipe.muiltRun(keys);	
+		try{
+			RedisGetPipeline<Map<String,String>> redisPipe = new RedisGetPipeline<Map<String,String>>(){
+				@Override
+				public Response<Map<String, String>> execute(Pipeline pipe, String key) {
+					return pipe.hgetAll(key);
+				}
+			};
+			return redisPipe.muiltRun(keys);
+		}catch(Exception e){
+			throw new Exception("redis pipeline hgetAll查询异常", e);
+		}
 	}
 	
 	public Map<String, String>  muiltGet(Collection<String> keys) throws Exception{
-		RedisGetPipeline<String> redisPipe = new RedisGetPipeline<String>(){
-			@Override
-			public Response<String> execute(Pipeline pipe, String key) {
-				return pipe.get(key);
-			}
-		};
-		return redisPipe.muiltRun(keys);	
+		try{
+			RedisGetPipeline<String> redisPipe = new RedisGetPipeline<String>(){
+				@Override
+				public Response<String> execute(Pipeline pipe, String key) {
+					return pipe.get(key);
+				}
+			};
+			return redisPipe.muiltRun(keys);
+		}catch(Exception e){
+			throw new Exception("redis pipeline get查询异常", e);
+		}
 	}
 	
 	
@@ -100,10 +99,12 @@ public class RedisPipelineDao {
 	 * 设置值操作
 	 * @author Administrator
 	 *
-	 * @param <V> 值的类型
+	 * @param <V> 写入值的类型
 	 */
 	public abstract class RedisSetPipeline<V> extends PipelineOps{
 		protected abstract void execute(Pipeline pipe,String key,V value);
+		
+		
 		public void muiltRun(Map<String,V> dataMap) throws Exception{
 			for(Entry<String,V> entry:dataMap.entrySet()){
 				String key = entry.getKey();
@@ -111,17 +112,23 @@ public class RedisPipelineDao {
 				try {
 					Pipeline pipe = getPipeline(key,false);
 					execute(pipe,key,value);
-				}catch(JedisConnectionException jce1) {
+				}catch(JedisConnectionException jedisE) {
 					try {
-						Pipeline pipe = getPipeline(key,false);
+						Pipeline pipe = getPipeline(key,true);
 						execute(pipe,key,value);
 					}catch(Exception jce2) {
-						Pipeline pipe = getPipeline(key,false);
+						Pipeline pipe = getPipeline(key,true);
 						execute(pipe,key,value);
 					}
 				}
 			}
-			clearAll();
+			//写入数据不需要返回结果，清空结果集。
+			try {
+				clearAllResponse();
+			}catch(Exception jedisE) {
+				//LOG.error("清空结果集异常", jedisE);
+				closeAllJedisConn();
+			}
 		}
 	}
 	/**
@@ -133,38 +140,47 @@ public class RedisPipelineDao {
 	private abstract class RedisGetPipeline<R> extends PipelineOps{
 		public abstract Response<R> execute(Pipeline pipe,String key);		
 		public <V> Map<String,R> muiltRun(Collection<String> keys) throws Exception{
-			Map<String,Response<R>> respMap = new HashMap<>();
-			for(String key:keys){
-				try {
-					Pipeline pipe = getPipeline(key,false);
-					respMap.put(key, execute(pipe,key));
-				}catch(JedisConnectionException jce1) {
+			try{
+				Map<String,Response<R>> respMap = new HashMap<>();
+				for(String key:keys){
 					try {
 						Pipeline pipe = getPipeline(key,false);
 						respMap.put(key, execute(pipe,key));
-					}catch(Exception jce2) {
-						Pipeline pipe = getPipeline(key,false);
-						respMap.put(key, execute(pipe,key));
+					}catch(JedisConnectionException jce1) {
+						try {
+							Pipeline pipe = getPipeline(key,true);
+							respMap.put(key, execute(pipe,key));
+						}catch(Exception jce2) {
+							Pipeline pipe = getPipeline(key,true);
+							respMap.put(key, execute(pipe,key));
+						}
 					}
 				}
+				//关闭pipe，获取结果
+				closeAllPipeline();
+				Map<String,R> result = new HashMap<>();
+				for(Entry<String,Response<R>> entry:respMap.entrySet()){
+					Response<R> resp = entry.getValue();
+					result.put(entry.getKey(), resp.get());
+				}
+				return result;
+			}finally{
+				closeAllJedisConn();
 			}
-			//关闭pipe，获取结果
-			close();
-			Map<String,R> result = new HashMap<>();
-			for(Entry<String,Response<R>> entry:respMap.entrySet()){
-				Response<R> resp = entry.getValue();
-				result.put(entry.getKey(), resp.get());
-			}
-			return result;
 		}		
 	}
+	
+	
 	private class PipelineOps{
-		private HashMap<Jedis,Pipeline> pipeMap = new HashMap<>();
+		
+		private JedisWithSlotCache jedisWithSlotCache = RedisClusterWithPipeline.Cluster.newJedisWithSlotCache();
+		private ConcurrentHashMap<Jedis,Pipeline> pipeMap = new ConcurrentHashMap<>();
+		
 		protected Pipeline getPipeline(String key,boolean isNewPipe) throws Exception{
 			int slot = JedisClusterCRC16.getSlot(key);
 			Jedis jedis = jedisWithSlotCache.getJedisFromSlot(slot,isNewPipe);
 			if(isNewPipe){
-				close();
+				closeAllPipeline();
 			}
 			if(!pipeMap.containsKey(jedis)){
 				pipeMap.put(jedis, jedis.pipelined());
@@ -172,22 +188,48 @@ public class RedisPipelineDao {
 			return pipeMap.get(jedis);
 		}
 		
-		public void close() throws IOException{
+		/**
+		 * 清除缓存中所有的结果
+		 * @throws Exception
+		 */
+		public void clearAllResponse() throws Exception{
+			try{
+				for(Pipeline pipe:pipeMap.values()){
+					if(pipe != null)
+						pipe.clear();
+				}
+			}catch(Exception e){
+				pipeMap.clear();
+				throw new Exception(e);
+			}
+		}
+		
+		/**
+		 * 关闭所有管道连接
+		 * @throws Exception
+		 */
+		public void closeAllPipeline() throws Exception{
 			try {
 				for(Pipeline pipe:pipeMap.values()){
 					pipe.close();
 				}
+			} catch (Exception e) {
+				throw new Exception("关闭pipeline异常",e);
+			} finally{
 				pipeMap.clear();
-			} catch (IOException e) {
-				throw new IOException("关闭pipeline异常",e);
 			}
 		}
-		
-		public void clearAll() throws IOException{
-			for(Pipeline pipe:pipeMap.values()){
-				if(pipe != null)
-					pipe.clear();
+
+		/**
+		 * 关闭所有jedis连接
+		 */
+		protected void closeAllJedisConn(){
+			try {
+				closeAllPipeline();
+			} catch (Exception e) {
+				//LOG.error(e);
 			}
+			jedisWithSlotCache.closeAllJedis();
 		}
 	}
 	
@@ -237,47 +279,49 @@ public class RedisPipelineDao {
 //	}
 	
 	
-	public static void main(String[] args) throws Exception {
-		RedisSetPipeline<List<String>> newRpushpipe = new RedisPipelineDao().newRpushPipe();
-		List<String> list = new ArrayList<>();
-		list.add("aaaaaaaaaaaaaaaa");
-		list.add("bbbbbbbbbbbbbbbb");
-		list.add("cccccccccccccccc");
-		Map<String,List<String>> dataMap = new HashMap<>();
-		dataMap.put("TEST:list", list);
-		newRpushpipe.muiltRun(dataMap);
-		newRpushpipe.close();
-		
-		newRpushpipe.muiltRun(dataMap);
-		newRpushpipe.close();
-	}
-	
-	
-//	public static void main(String[] args)  throws Exception {
-//		RedisPipelineDao commonDao = new RedisPipelineDao();
-//		CommonCacheDao cacheDao = new CommonCacheDao();
+//	public static void main(String[] args) throws Exception {
+//		RedisSetPipeline<List<String>> newRpushpipe = new RedisPipelineDao().newRpushPipe();
+//		List<String> list = new ArrayList<>();
+//		list.add("aaaaaaaaaaaaaaaa");
+//		list.add("bbbbbbbbbbbbbbbb");
+//		list.add("cccccccccccccccc");
+//		Map<String,List<String>> dataMap = new HashMap<>();
+//		dataMap.put("TEST:list", list);
+//		newRpushpipe.muiltRun(dataMap);
+//		newRpushpipe.close();
 //		
-//		String cahceKey = "TEST";
-//		List<String> keys =new ArrayList<>();
-//		long t1 = System.currentTimeMillis();
-//		for(int i=0;i<100000;i++){
-//			String key = cahceKey+":CACHE_"+i;
-//			commonDao.pipeSet(key, key+"............");
-//			keys.add(key);
-//		}
-//		long t2 = System.currentTimeMillis();
-//		
-//		List<String> res = commonDao.pipeMuiltGet(keys);
-//		long t3 = System.currentTimeMillis();
-//		
-////		long t1 = System.currentTimeMillis();
-////		Set<String> keys = cacheDao.getKeys1("USER_TEMP|*");
-////		long t2 = System.currentTimeMillis();
-////		List<Map<String,String>> res = commonDao.pipeMuiltHgetAll(keys); 
-////		long t3 = System.currentTimeMillis();
-//		
-//		System.out.println(res.size()+"   "+(t2-t1)+"   "+(t3-t2));
+//		newRpushpipe.muiltRun(dataMap);
+//		newRpushpipe.close();
 //	}
+	
+	
+	public static void main(String[] args)  throws Exception {
+		RedisPipelineDao commonDao = new RedisPipelineDao();
+		RedisSetPipeline<String> setPipe = commonDao.newStringSetPipe();
+		
+		CommonCacheDao cacheDao = new CommonCacheDao();
+		
+		String cahceKey = "TEST";
+		Map<String,String> dataMap = new HashMap<>();
+		long t1 = System.currentTimeMillis();
+		for(int i=0;i<100000;i++){
+			String key = cahceKey+":CACHE_"+i;
+			dataMap.put(key, key+"............");
+		}
+		setPipe.muiltRun(dataMap);
+		long t2 = System.currentTimeMillis();
+		
+		Map<String, String> res = commonDao.muiltGet(dataMap.keySet());
+		long t3 = System.currentTimeMillis();
+		
+//		long t1 = System.currentTimeMillis();
+//		Set<String> keys = cacheDao.getKeys1("USER_TEMP|*");
+//		long t2 = System.currentTimeMillis();
+//		List<Map<String,String>> res = commonDao.pipeMuiltHgetAll(keys); 
+//		long t3 = System.currentTimeMillis();
+		
+		System.out.println(res.size()+"   "+(t2-t1)+"   "+(t3-t2));
+	}
 	
 	
 	

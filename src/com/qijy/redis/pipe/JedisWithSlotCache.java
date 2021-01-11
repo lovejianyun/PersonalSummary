@@ -3,18 +3,21 @@ package com.qijy.redis.pipe;
 import java.util.HashMap;
 import java.util.Map;
 
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSlotBasedConnectionHandler;
 
 public class JedisWithSlotCache {
+
 	
 	private JedisClusterInfoCache cache;
 	private JedisSlotBasedConnectionHandler connectionHandler;
 	
-//	private Map<Integer,JedisPool> slotsMap = new HashMap<>();
+
 	private Map<JedisPool,Jedis> jedisMap = new HashMap<>();
+	
 	
 	public JedisWithSlotCache(JedisClusterInfoCache cache,JedisSlotBasedConnectionHandler connectionHandler) {
 		this.cache = cache;
@@ -64,8 +67,15 @@ public class JedisWithSlotCache {
 	 * 关闭此缓存内的jedis连接，回收到连接池
 	 */
 	public void closeAllJedis(){
-		for(Jedis jedis:jedisMap.values()){
-			jedis.close();
+		try{
+			for(Jedis jedis:jedisMap.values()){
+				jedis.close();
+			}
+		}catch(Exception e){
+			//LOG.error("关闭Jedis连接异常", e);
+			e.printStackTrace();
+		}finally{
+			jedisMap.clear();
 		}
 	}
 	
