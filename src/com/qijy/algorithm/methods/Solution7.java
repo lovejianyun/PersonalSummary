@@ -1,8 +1,6 @@
 package com.qijy.algorithm.methods;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /*
  * @ Description   :  将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
@@ -55,6 +53,8 @@ public class Solution7 {
 
 
     public static void main(String[] args) {
+        int [][] arr = new int[5][6];
+        System.out.println(arr[0].length);
         ListNode l1 = new ListNode();
         l1.setVal(2);
         ListNode node1 = new ListNode();

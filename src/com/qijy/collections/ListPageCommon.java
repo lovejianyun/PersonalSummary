@@ -83,10 +83,12 @@ public class ListPageCommon<R,T> {
                         Object o1 = null;
                         for (Field declaredField : declaredFields) {
                             declaredField.setAccessible(true);
-                            DateTime annotation = declaredField.getAnnotation(DateTime.class);
-                            if(annotation != null){
-                                if(annotation.name().equals(annotation1.name())&& annotation.type().equals("")){
-                                    o1 = declaredField.get(t);
+                            if(declaredField.isAnnotationPresent(DateTime.class)){
+                                DateTime annotation = declaredField.getAnnotation(DateTime.class);
+                                if(annotation != null){
+                                    if(annotation.name().equals(annotation1.name())&& annotation.type().equals("")){
+                                        o1 = declaredField.get(t);
+                                    }
                                 }
                             }
                         }
