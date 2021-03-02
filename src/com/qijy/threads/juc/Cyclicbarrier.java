@@ -11,10 +11,15 @@ import java.util.concurrent.TimeUnit;
  * @ CreateDate    :  2020/11/5 9:10
  */
 public class Cyclicbarrier {
-    private static CyclicBarrier cyclicBarrier = new CyclicBarrier(1000);
+    private static CyclicBarrier cyclicBarrier = new CyclicBarrier(10, new Runnable() {
+        @Override
+        public void run() {
+            System.out.println("---------------------------------------------------------------------------------------------------------------------");
+        }
+    });
 
     public static void main(String[] args) {
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread thread = new Thread(run, "线程" + i);
             thread.start();
         }

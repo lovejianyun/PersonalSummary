@@ -1,22 +1,11 @@
 package com.qijy.redis;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.*;
 import redis.clients.util.JedisClusterCRC16;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class CommonCacheDao {
 	private RedisClusterUtil utils = RedisClusterUtil.getInstance();
@@ -98,6 +87,22 @@ public class CommonCacheDao {
 			throw e;
 		}
 	}
+
+	public void eval(String script,List<String> list,List<String> args) throws Exception{
+		JedisCluster edis = null;
+		try{
+			edis = utils.getJedisClusterClient();
+			if(null == edis){
+				throw new SQLException("获取Redis数据库连接失败");
+			}
+			Object eval = edis.eval(script, list, args);
+		}catch(Exception e){
+			throw e;
+		}
+
+	}
+
+
 	
 	
 	public String getStr(String key) throws Exception {
