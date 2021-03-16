@@ -23,12 +23,17 @@ public class KafkaConsumerThread implements Runnable {
 
     @Override
     public void run() {
-        while(true){
-            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(100));
-            for (ConsumerRecord<String, String> record : records) {
-                System.out.println("线程:"+Thread.currentThread().getName()+";topic:"+record.topic()+";key:"+record.key()+";value:"+record.value());
-                kafkaConsumer.commitSync();
+        try {
+            while(true){
+                ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    System.out.println("线程:"+Thread.currentThread().getName()+";topic:"+record.topic()+";key:"+record.key()+";value:"+record.value());
+                    kafkaConsumer.commitAsync();
+                }
             }
+        } catch (Exception e) {
+            kafkaConsumer.commitSync();
+            kafkaConsumer.close();
         }
     }
 }
