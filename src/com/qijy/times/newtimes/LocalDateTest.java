@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
+import java.util.Date;
 
 import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 
@@ -20,7 +21,12 @@ public class LocalDateTest {
 //        test002();
 //        test003();
 //        test004();
-        test005();
+//        test005();
+//        test006();
+//        test007();
+//        test008();
+//        test009();
+        test10000();
     }
 
     private static void test001(){
@@ -29,6 +35,7 @@ public class LocalDateTest {
         int year = date.getYear();
         // 指定日期的月份
         Month month = date.getMonth();
+        int value = month.getValue();
         // 指定日期多少号
         int day = date.getDayOfMonth();
         // 今天星期几
@@ -37,7 +44,7 @@ public class LocalDateTest {
         int len = date.lengthOfMonth();
         // 是否为闰年
         boolean leap = date.isLeapYear();
-        System.out.println("year:"+year+"    |month:"+month+"    |day:"+day+"    |dow:"+dow+"    |len:"+len+"    |"+leap);
+        System.out.println("year:"+year+"    |month:"+value+"    |day:"+day+"    |dow:"+dow+"    |len:"+len+"    |"+leap);
 
     }
 
@@ -81,5 +88,67 @@ public class LocalDateTest {
         System.out.println(localDate.toString());
 
         date.with(TemporalAdjusters.firstDayOfMonth());
+    }
+    /** 
+     * @description: 时间戳转化测试 
+     * @param:  
+     * @return: void 
+     * @author qijy
+     * @date: 2022/8/31 16:21
+     */
+    private static void test006(){
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDateTime now = LocalDateTime.now();
+        long timestamp = now.atZone(zone).toInstant().toEpochMilli();
+        System.out.println("当前时间时间戳:"+timestamp);
+    }
+    /**
+     * @description: 时间戳转换成日期
+     * @param:
+     * @return: void
+     * @author qijy
+     * @date: 2022/8/31 16:25
+     */
+    private static void test007(){
+        long times = 1661934235618L;
+        Instant instant = Instant.ofEpochMilli(times);
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        System.out.println(dateTime);
+    }
+    /**
+     * @description: date 日期转换成LocalDatetime
+     * @param:
+     * @return: void
+     * @author qijy
+     * @date: 2022/8/31 16:57
+     */
+    private static void test008(){
+        Date date = new Date();
+        LocalDateTime dateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        System.out.println(dateTime);
+    }
+    /**
+     * @description: localDatetime转换成date
+     * @param:
+     * @return: void
+     * @author qijy
+     * @date: 2022/8/31 17:27
+     */
+    private static void test009(){
+        LocalDateTime now = LocalDateTime.now();
+        Date date = Date.from(now.atZone(ZoneId.systemDefault()).toInstant());
+        System.out.println(date);
+    }
+    /**
+     * @description: 时间戳转换成LocalDateTime
+     * @author qijy
+     * @date 2022/12/29 16:00
+     * @version 1.0
+     */
+    private static void test10000(){
+        Long time = 1661934235618L;
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
+        String format = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        System.out.println(format);
     }
 }
