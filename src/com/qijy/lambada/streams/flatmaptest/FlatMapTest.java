@@ -63,5 +63,12 @@ public class FlatMapTest {
 
     }
 
+    private static void test005(){
+        List<String> words = Arrays.asList("Java", "is", "fun");
+
+        Stream<String> stringStream = words.stream()
+                .flatMap(word -> Arrays.stream(word.split("")));
+    }
+
 
 }
