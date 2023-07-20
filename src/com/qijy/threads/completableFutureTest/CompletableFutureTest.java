@@ -1,8 +1,9 @@
 package com.qijy.threads.completableFutureTest;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * @author qijy
@@ -15,6 +16,7 @@ public class CompletableFutureTest {
 //        test001();
 //        test002();
         test003();
+//        test004();
     }
     /**
      * @description: 处理A,B异步，并且等A,B全部执行完毕，执行C
@@ -100,6 +102,35 @@ public class CompletableFutureTest {
         completableFuture.get();
         System.out.println("任务执行完毕！");
 
+    }
+    /**
+     * @description: 测试等所有任务都执行完成，才返回耗时。
+     * @author qijy
+     * @date 2023/7/20 10:33
+     * @version 1.0
+     */
+    private static void test004() throws Exception{
+        List<CompletableFuture<String>> list = new ArrayList<>();
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(100,100,10,TimeUnit.SECONDS,new LinkedBlockingQueue<>(1000));
+        long start = System.currentTimeMillis();
+        for(int i=0;i<100;i++){
+            CompletableFuture<String> supplyAsync = CompletableFuture.supplyAsync(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("测试有返回值："+"qijy");
+                return "qijy";
+            },pool);
+            list.add(supplyAsync);
+        }
+        CompletableFuture<Void> future = CompletableFuture.allOf(list.toArray(new CompletableFuture[0]));
+        future.get();
+        long end = System.currentTimeMillis();
+        System.out.println("所有执行完成耗时："+(end-start));
+        // 关闭线程池
+        pool.shutdown();
     }
 
 
