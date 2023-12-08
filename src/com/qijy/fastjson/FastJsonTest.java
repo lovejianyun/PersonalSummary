@@ -15,7 +15,113 @@ public class FastJsonTest {
 
 //        test02();
 //        test03();
-        test04();
+//        test04();
+
+        test06();
+    }
+
+
+    public static void test06(){
+        Map<String,String> map = new HashMap<>();
+
+        String str = "{\n" +
+                "\t\"realIP\": \"111.76.168.62\",\n" +
+                "\t\"wifiAble\": true,\n" +
+                "\t\"cpuUsage\": \"to 2490\",\n" +
+                "\t\"country\": \"zh_CN\",\n" +
+                "\t\"appVersion\": \"4.2.7\",\n" +
+                "\t\"btMac\": \"\",\n" +
+                "\t\"channel\": \"AppStore\",\n" +
+                "\t\"moduleName\": \"iPhone 11\",\n" +
+                "\t\"hasJailbroken\": false,\n" +
+                "\t\"language\": \"zh-Hans-CN\",\n" +
+                "\t\"mcc\": \"460\",\n" +
+                "\t\"type\": \"iOS\",\n" +
+                "\t\"uuid\": \"C42E5F76-B600-4D82-9122-7EBE2E6CC1F4\",\n" +
+                "\t\"resolution\": \"1792 x 828\",\n" +
+                "\t\"deviceName\": \"温凯文的iPhone\",\n" +
+                "\t\"deviceId\": \"I4RXAloZAQzIfmanPXB1692847046656\",\n" +
+                "\t\"operator\": 1,\n" +
+                "\t\"sdUseSize\": \"117.05G\",\n" +
+                "\t\"province\": \"江西省\",\n" +
+                "\t\"appId\": \"com.fujfu\",\n" +
+                "\t\"currentSignal\": \"WIFI\",\n" +
+                "\t\"idfv\": \"493ED08C-030B-4C9A-80FF-72D17643CAF5\",\n" +
+                "\t\"phoneLocation\": \"Home按钮在下\",\n" +
+                "\t\"radius\": \"10.000000\",\n" +
+                "\t\"longitude\": \"114.909816\",\n" +
+                "\t\"sdFreeSize\": \"2.10G\",\n" +
+                "\t\"hasSimulator\": false,\n" +
+                "\t\"deviceType\": 1,\n" +
+                "\t\"buildVersion\": \"15\",\n" +
+                "\t\"wifiIntensity\": \"NONE\",\n" +
+                "\t\"ip\": \"111.76.168.62\",\n" +
+                "\t\"wifiSsid\": \"乌纳康养发馆\",\n" +
+                "\t\"idfa\": \"\",\n" +
+                "\t\"ipAddress\": \"10.1.110.55\",\n" +
+                "\t\"fbdId\": \"64e6ccb3fdcef22242f6d00c\",\n" +
+                "\t\"cpu\": \"ARMv8-A\",\n" +
+                "\t\"timeZone\": \"Local Time Zone (Asia/Shanghai (GMT+8) offset 28800)\",\n" +
+                "\t\"hasBroken\": false,\n" +
+                "\t\"sysCarrier\": \"中国移动\",\n" +
+                "\t\"version\": \"4.2.7\",\n" +
+                "\t\"identityOcrTime\": 1692847268,\n" +
+                "\t\"iActiveNetType\": 10,\n" +
+                "\t\"phoneNumber\": \"\",\n" +
+                "\t\"district\": \"渝水区\",\n" +
+                "\t\"openUdid\": \"cb779f347cf911c5c855735e9df0309c3d8c43de\",\n" +
+                "\t\"hasDebug\": false,\n" +
+                "\t\"sdAllSize\": \"119.15G\",\n" +
+                "\t\"rebootTime\": \"2023-08-10 22:28:30\",\n" +
+                "\t\"deviceBrand\": \"apple\",\n" +
+                "\t\"gateWayWiFi\": \"192.168.0.1\",\n" +
+                "\t\"fcuuid\": \"bf57bf0a8c2740e2ac0c71dc0e6da996\",\n" +
+                "\t\"altitude\": \"81.449020\",\n" +
+                "\t\"iNetworkType\": 13,\n" +
+                "\t\"hasCharging\": false,\n" +
+                "\t\"city\": \"新余市\",\n" +
+                "\t\"bssid\": \"a4:1a:3a:37:ee:bf\",\n" +
+                "\t\"latitude\": \"27.829618\",\n" +
+                "\t\"imsi\": \"46002\",\n" +
+                "\t\"ssid\": \"乌纳康养发馆\",\n" +
+                "\t\"cpuInfo\": \"6**\",\n" +
+                "\t\"mac\": \"\",\n" +
+                "\t\"headPhonesAttached\": false,\n" +
+                "\t\"manufacturer\": \"apple\",\n" +
+                "\t\"deviceNum\": \"I4RXAloZAQzIfmanPXB1692847046656\",\n" +
+                "\t\"osVersion\": \"14.6\",\n" +
+                "\t\"street\": \"赣西大道\",\n" +
+                "\t\"osType\": \"iOS\",\n" +
+                "\t\"currency\": \"¥\",\n" +
+                "\t\"networkType\": \"WIFI\",\n" +
+                "\t\"isSimulator\": \"0\",\n" +
+                "\t\"prescreeningId\": \"64e6ccb4b85c955cf49ed58e\",\n" +
+                "\t\"batteryLevel\": \"0.96\",\n" +
+                "\t\"orientation\": \"Home按钮在下\",\n" +
+                "\t\"phoneType\": \"iOS\",\n" +
+                "\t\"product\": \"apple\",\n" +
+                "\t\"address\": \"中国江西省新余市渝水区赣西大道\",\n" +
+                "\t\"mnc\": \"02\",\n" +
+                "\t\"density\": \"326\",\n" +
+                "\t\"os\": 1,\n" +
+                "\t\"appName\": \"富宝袋\",\n" +
+                "\t\"isoCountryCode\": \"cn\",\n" +
+                "\t\"IPhoneType\": 1,\n" +
+                "\t\"hasSupportTouchId\": false,\n" +
+                "\t\"carrier\": \"中国移动\",\n" +
+                "\t\"hasSupportFaceID\": true,\n" +
+                "\t\"brightness\": \"0.64\",\n" +
+                "\t\"wlanMac\": \"\",\n" +
+                "\t\"netmaskWiFi\": \"255.255.255.0\",\n" +
+                "\t\"time\": \"1692862265562\",\n" +
+                "\t\"memSize\": \"3858.00M\"\n" +
+                "}";
+
+        JSONObject jsonObject = JSONObject.parseObject(str);
+        String s = jsonObject.toJSONString();
+        map.put("str",s);
+        System.out.println(JSONObject.toJSONString(map));
+
     }
 
     public static void test01(){
